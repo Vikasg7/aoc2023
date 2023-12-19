@@ -7,7 +7,7 @@ defmodule Solution do
   def recover(line) do
     digits = line |> String.to_charlist() |> Enum.filter(&digit?/1)
     string = to_string([Enum.at(digits, 0), Enum.at(digits, -1)])
-    {calibration_value, _} = Integer.parse(string)
+    calibration_value = String.to_integer(string)
     calibration_value
   end
 
