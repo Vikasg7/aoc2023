@@ -1,46 +1,58 @@
 defmodule Solution do
 
-  def digit?(c) do
-    c in ?0..?9
-  end
-  
-  def recover(line) do
-    digits = line |> String.to_charlist() |> Enum.filter(&digit?/1)
-    string = to_string([Enum.at(digits, 0), Enum.at(digits, -1)])
-    {calibration_value, _} = Integer.parse(string)
-    calibration_value
-  end
-
-  @spelled_digit_tbl [
-    {"one", "o1e"},
-    {"two", "t2o"},
-    {"three", "t3e"},
-    {"four", "f4",},
-    {"five", "f5e"},
-    {"six", "s6",},
-    {"seven", "s7n"},
-    {"eight", "e8t"},
-    {"nine", "n9e"}
-  ]
-  
-  def recover_with_spelled(line) do
-    @spelled_digit_tbl
-    |> Enum.reduce(line, fn {spelled, digit}, line ->
-      String.replace(line, spelled, digit)
-    end)
-    |> recover()
+  def part1({game_id, subsets}) do
+    max_balls_by_color = 
+      subsets
+      |> Enum.concat()
+      |> Enum.reduce([red: 0, green: 0, blue: 0], fn [balls, color], acc ->
+        Keyword.update!(acc, String.to_atom(color), fn cur -> max(cur, String.to_integer(balls)) end)
+      end)
+    possible_game? = 
+      max_balls_by_color[:red] <= 12 and
+      max_balls_by_color[:green] <= 13 and
+      max_balls_by_color[:blue] <= 14
+    if possible_game?, do: String.to_integer(game_id), else: 0
   end
 
-  @input "input/01.txt"
+  def part2({_, subsets}) do
+    min_balls_by_color = 
+      subsets
+      |> Enum.concat()
+      |> Enum.reduce([red: 0, green: 0, blue: 0], fn [balls, color], acc ->
+        Keyword.update!(acc, String.to_atom(color), fn cur -> max(cur, String.to_integer(balls)) end)
+      end)
+      power_of_set_of_cubes = 
+        min_balls_by_color[:red] *
+        min_balls_by_color[:green] *
+        min_balls_by_color[:blue]
+      power_of_set_of_cubes
+  end
+
+  @input "input/02.txt"
+
+  def parse_game(line) do
+    [game_id, subsets] = String.split(line, ": ")
+    game_id = String.split(game_id, " ") |> Enum.at(1)
+    subsets =
+      subsets
+      |> String.split("; ")
+      |> Enum.map(fn set ->
+        set
+        |> String.split(", ")
+        |> Enum.map(&String.split(&1, " "))
+      end)
+    {game_id, subsets}
+  end
   
   def run(func) do
     File.stream!(@input)
     |> Stream.map(&String.trim/1)
+    |> Stream.map(&parse_game/1)
     |> Stream.map(func)
     |> Enum.sum()
   end
 
 end
 
-IO.puts(Solution.run(&Solution.recover/1))
-IO.puts(Solution.run(&Solution.recover_with_spelled/1))
+IO.puts(Solution.run(&Solution.part1/1))
+IO.puts(Solution.run(&Solution.part2/1))
