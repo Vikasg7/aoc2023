@@ -3,7 +3,6 @@ defmodule Solution do
   def part1({game_id, subsets}) do
     max_balls_by_color = 
       subsets
-      |> Enum.concat()
       |> Enum.reduce([red: 0, green: 0, blue: 0], fn [balls, color], acc ->
         Keyword.update!(acc, String.to_atom(color), fn cur -> max(cur, String.to_integer(balls)) end)
       end)
@@ -17,7 +16,6 @@ defmodule Solution do
   def part2({_, subsets}) do
     min_balls_by_color = 
       subsets
-      |> Enum.concat()
       |> Enum.reduce([red: 0, green: 0, blue: 0], fn [balls, color], acc ->
         Keyword.update!(acc, String.to_atom(color), fn cur -> max(cur, String.to_integer(balls)) end)
       end)
@@ -35,12 +33,8 @@ defmodule Solution do
     game_id = String.split(game_id, " ") |> Enum.at(1)
     subsets =
       subsets
-      |> String.split("; ")
-      |> Enum.map(fn set ->
-        set
-        |> String.split(", ")
-        |> Enum.map(&String.split(&1, " "))
-      end)
+      |> String.split(~r/[;,] /i)
+      |> Enum.map(&String.split(&1, " "))
     {game_id, subsets}
   end
   
